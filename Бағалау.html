@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аспан Әлемі Бағалауы </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(circle at center, #1e40af 0%, #1e3a8a 50%, #172554 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            color: white;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1rem;
+            max-width: 1440px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 1100px) {
+            .grid-wrapper {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 20px;
+            }
+            .main-grid {
+                min-width: 950px;
+            }
+        }
+
+        .battery-case {
+            width: 50px;
+            height: 80px;
+            border: 2px solid #7dd3fc;
+            border-radius: 25px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(125, 211, 252, 0.2);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column-reverse;
+            padding: 3px;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+
+        .battery-case:hover {
+            transform: translateY(-3px);
+            border-color: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .battery-fill {
+            width: 100%;
+            height: 0%;
+            border-radius: 20px;
+            transition: height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s ease;
+            box-shadow: 0 0 12px currentColor;
+        }
+
+        .editable-text {
+            border: none;
+            background: transparent;
+            text-align: center;
+            outline: none;
+            width: 100%;
+            color: white;
+        }
+        
+        /* Placeholder стилі - бос кезде көрінеді */
+        .editable-text::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+        }
+
+        .student-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #e0f2fe;
+            margin-top: 4px;
+        }
+
+        .motivation-tag {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            padding: 2px;
+            transition: all 0.3s ease;
+            user-select: none;
+            border-radius: 8px;
+        }
+
+        .motivation-tag.active {
+            color: #fef08a;
+            background: rgba(253, 224, 71, 0.1);
+            text-shadow: 0 0 10px #facc15, 0 0 20px #eab308;
+            transform: scale(1.1);
+        }
+
+        .comment-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        .comment-btn:hover { opacity: 1; filter: drop-shadow(0 0 5px white); }
+
+        .feedback-text {
+            font-size: 0.65rem;
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            width: 100%;
+            min-height: 20px;
+            padding: 3px;
+            margin-top: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            resize: none;
+            overflow: hidden;
+            outline: none;
+        }
+
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: explode 0.7s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(1px);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="stars-container"></div>
+    <div class="planet w-32 h-32 bg-sky-400/20 top-5 left-5 shadow-[0_0_50px_rgba(56,189,248,0.3)]"></div>
+    <div class="planet w-56 h-56 bg-indigo-500/10 bottom-5 right-5 shadow-[0_0_70_rgba(99,102,241,0.2)]"></div>
+
+    <header class="w-full max-w-4xl bg-white/10 backdrop-blur-xl p-5 rounded-3xl shadow-2xl border border-white/20 mb-4 text-center z-10">
+        <!-- Тақырып орны бос -->
+        <div class="flex justify-center items-center gap-2">
+            <span class="text-sky-200 font-bold text-base">Мұғалім:</span>
+            <!-- Мұғалім аты бос -->
+            <input type="text" class="editable-text w-auto inline-block text-base text-white font-bold italic tracking-wide border-b border-white/20 focus:border-white transition-colors" value="" placeholder="Аты-жөніңіз">
+        </div>
+    </header>
+
+    <div class="grid-wrapper">
+        <main class="main-grid" id="battery-grid"></main>
+    </div>
+
+    <script>
+        const starsContainer = document.getElementById('stars-container');
+        for(let i=0; i<100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 2.5 + 'px';
+            star.style.width = size;
+            star.style.height = size;
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
+            starsContainer.appendChild(star);
+        }
+
+        const phrases = [
+            "Ғарышкер оқушы! 🚀", "Жұлдызың жансын! ✨", "Керемет биіктік! 🌠", 
+            "Шексіз білім! 🪐", "Ерен жүйрік! 🛰️", "Айбынды алғыр! 🌙", 
+            "Жарқыраған талант! 💎", "Білім алыбы! ☄️", "Биікке самға! 🦅",
+            "Ғажап зейін! 🛸", "Жарқын болашақ! 🌏"
+        ];
+
+        const AudioEngine = {
+            ctx: new (window.AudioContext || window.webkitAudioContext)(),
+            
+            play(type) {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                
+                const now = this.ctx.currentTime;
+                const masterGain = this.ctx.createGain();
+                masterGain.connect(this.ctx.destination);
+                masterGain.gain.setValueAtTime(0.5, now); 
+
+                switch(type) {
+                    case 'low': 
+                        this.harpArpeggio([261, 329, 392], now, masterGain);
+                        break;
+                    case 'mid': 
+                        this.harpArpeggio([392, 493, 587, 783], now, masterGain);
+                        break;
+                    case 'high': 
+                        // Шапалақ алынып тасталды, тек салтанатты арфа қалды
+                        this.harpArpeggio([523, 659, 783, 1046, 1318], now, masterGain);
+                        break;
+                    case 'magic': 
+                        for(let i=0; i<8; i++) {
+                            this.osc(1200 + (i * 150), 'sine', now + (i * 0.03), 0.1, masterGain);
+                        }
+                        break;
+                }
+            },
+
+            harpArpeggio(notes, start, target) {
+                notes.forEach((f, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, start + (i * 0.08));
+                    
+                    g.gain.setValueAtTime(0, start + (i * 0.08));
+                    g.gain.linearRampToValueAtTime(0.2, start + (i * 0.08) + 0.02);
+                    g.gain.exponentialRampToValueAtTime(0.001, start + (i * 0.08) + 1.2);
+
+                    osc.connect(g);
+                    g.connect(target);
+                    osc.start(start + (i * 0.08));
+                    osc.stop(start + (i * 0.08) + 1.5);
+                });
+            },
+
+            osc(freq, type, start, vol, target) {
+                const osc = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, start);
+                g.gain.setValueAtTime(vol, start);
+                g.gain.exponentialRampToValueAtTime(0.001, start + 0.8);
+                osc.connect(g);
+                g.connect(target);
+                osc.start(start);
+                osc.stop(start + 1.0);
+            }
+        };
+
+        const grid = document.getElementById('battery-grid');
+        
+        for (let i = 1; i <= 24; i++) {
+            const card = document.createElement('div');
+            card.className = 'relative flex flex-col items-center gap-1 bg-white/5 p-3 rounded-2xl border border-white/10 hover:bg-white/15 transition-all duration-300 shadow-lg';
+            
+            const commentBtn = document.createElement('div');
+            commentBtn.className = 'comment-btn';
+            commentBtn.innerHTML = '🪐';
+            
+            const battery = document.createElement('div');
+            battery.className = 'battery-case';
+            battery.dataset.step = 0; 
+            
+            const fill = document.createElement('div');
+            fill.className = 'battery-fill';
+            
+            const nameInput = document.createElement('input');
+            nameInput.className = 'editable-text student-name';
+            nameInput.value = `Оқушы ${i}`;
+
+            const motivation = document.createElement('div');
+            motivation.className = 'motivation-tag';
+            motivation.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+
+            const feedback = document.createElement('textarea');
+            feedback.className = 'feedback-text';
+            feedback.placeholder = 'Пікір...';
+            feedback.rows = 1;
+
+            motivation.addEventListener('click', (e) => {
+                motivation.classList.toggle('active');
+                AudioEngine.play('magic');
+                createSparkles(e.clientX, e.clientY, '#facc15');
+            });
+
+            commentBtn.addEventListener('click', () => feedback.focus());
+
+            battery.appendChild(fill);
+            card.appendChild(commentBtn);
+            card.appendChild(battery);
+            card.appendChild(nameInput);
+            card.appendChild(motivation);
+            card.appendChild(feedback);
+            grid.appendChild(card);
+
+            battery.addEventListener('click', (e) => {
+                let step = parseInt(battery.dataset.step);
+                step = (step + 1) % 7; 
+                battery.dataset.step = step;
+
+                if (step === 0) {
+                    fill.style.height = '0%';
+                    fill.style.backgroundColor = 'transparent';
+                } else if (step <= 2) {
+                    fill.style.height = (step * 16.6) + '%';
+                    fill.style.backgroundColor = '#f87171';
+                    AudioEngine.play('low');
+                } else if (step <= 4) {
+                    fill.style.height = (step * 16.6) + '%';
+                    fill.style.backgroundColor = '#fbbf24';
+                    AudioEngine.play('mid');
+                } else {
+                    fill.style.height = (step * 16.6) + '%';
+                    fill.style.backgroundColor = '#4ade80';
+                    if(step >= 5) AudioEngine.play('high');
+                    if(step === 6) fill.style.height = '100%';
+                }
+                createSparkles(e.clientX, e.clientY, fill.style.backgroundColor);
+            });
+        }
+
+        function createSparkles(x, y, color) {
+            if (!color || color === 'transparent') color = '#ffffff';
+            for (let i = 0; i < 12; i++) {
+                const s = document.createElement('div');
+                s.className = 'sparkle';
+                s.style.backgroundColor = color;
+                s.style.width = Math.random() * 6 + 2 + 'px';
+                s.style.height = s.style.width;
+                s.style.left = x + 'px';
+                s.style.top = y + 'px';
+                s.style.setProperty('--tx', (Math.random() - 0.5) * 120 + 'px');
+                s.style.setProperty('--ty', (Math.random() - 0.5) * 120 + 'px');
+                document.body.appendChild(s);
+                setTimeout(() => s.remove(), 700);
+            }
+        }
+    </script>
+    <script>
+        const titleInput = document.querySelector('header input[type="text"]');
+        const teacherInput = document.querySelector('header input.w-auto');
+
+    // загрузка сохранённых данных
+        titleInput.value = localStorage.getItem("lesson_title") || "";
+        teacherInput.value = localStorage.getItem("teacher_name") || "";
+
+    // сохранение при вводе
+        titleInput.addEventListener("input", () => {
+            localStorage.setItem("lesson_title", titleInput.value);
+        });
+
+        teacherInput.addEventListener("input", () => {
+            localStorage.setItem("teacher_name", teacherInput.value);
+        });
+    </script>
+    <script>
+        const students = [
+           "Сабиля","Балнұр","Айдос","Әмірәлі","Медина Б","Ерзат",
+           "Санжар","Айзере","Ислам","Медина Ж","Сайфолла","Ибраһим",
+           "Аян","Бейбіт","Мухаммед","Мерген","Алибек","Ерназар",
+           "Жангир","Елдос","Айтмухаммед","Алдияр","Әділ","Ақниет"
+       ];
+
+       const inputs = document.querySelectorAll('.student-name');
+
+       inputs.forEach((input, i) => {
+        if (students[i]) {
+            input.value = students[i];
+            localStorage.setItem('student_' + i, students[i]);
+        }
+    });
+</script>
+
+</body>
+</html>
